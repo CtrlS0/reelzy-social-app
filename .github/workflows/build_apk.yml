@@ -20,18 +20,19 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Auto-Fix Gradle Properties & Build APK
+      - name: Auto-Fix Kotlin, Gradle & Build APK
         run: |
           PROJECT_DIR=$(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1 | xargs dirname)
-          echo "Found Flutter project in: $PROJECT_DIR"
+          echo "Found project in: $PROJECT_DIR"
           cd "$PROJECT_DIR"
-          
-          # Force SDK 34 in gradle.properties and build files
-          echo "android.suppressUnsupportedCompileSdk=34" >> android/gradle.properties
-          
-          # Replace compileSdkVersion with 34 across gradle files
+
+          # Force compileSdk 34
           find android -type f \( -name "build.gradle" -o -name "build.gradle.kts" \) -exec sed -i 's/compileSdkVersion.*/compileSdkVersion 34/g' {} +
           find android -type f \( -name "build.gradle" -o -name "build.gradle.kts" \) -exec sed -i 's/compileSdk = .*/compileSdk = 34/g' {} +
+
+          # Update Kotlin version everywhere
+          find android -type f \( -name "build.gradle" -o -name "build.gradle.kts" -o -name "settings.gradle" \) -exec sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = "1.9.22"/g' {} +
+          find android -type f \( -name "build.gradle" -o -name "build.gradle.kts" -o -name "settings.gradle" \) -exec sed -i 's/org.jetbrains.kotlin.android" version .*/org.jetbrains.kotlin.android" version "1.9.22"/g' {} +
 
           flutter pub get
           flutter build apk --release --no-tree-shake-icons
