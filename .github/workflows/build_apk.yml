@@ -20,20 +20,29 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Force Compatible SDK & Build APK
+      - name: Upgrade Gradle & Kotlin, then Build APK
         run: |
           PROJECT_DIR=$(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1 | xargs dirname)
           echo "Found project in: $PROJECT_DIR"
-          cd "$PROJECT_DIR"
+          cd "$PROJECT_DIR/android"
 
-          # Create or update gradle.properties to bypass Kotlin/SDK mismatch checks
-          echo "android.suppressUnsupportedCompileSdk=34" >> android/gradle.properties
-          echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m" >> android/gradle.properties
+          # Upgrade Gradle Wrapper to 8.0
+          sed -i 's/gradle-.*-all.zip/gradle-8.0-all.zip/g' gradle/wrapper/gradle-wrapper.properties
+          sed -i 's/gradle-.*-bin.zip/gradle-8.0-bin.zip/g' gradle/wrapper/gradle-wrapper.properties
 
+          # Suppress compileSdk check & update Kotlin
+          echo "android.suppressUnsupportedCompileSdk=34" >> gradle.properties
+          sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = "1.8.22"/g' build.gradle || true
+          
+          cd ..
           flutter pub get
-          flutter build apk --release --no-tree-shake-icons --extra-front-end-options="--no-implicit-dynamic" || flutter build apk --release --no-tree-shake-icons
+          flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: reelzy-app
+          path: '**/build/app/outputs/flutter-apk/*.apk'
         uses: actions/upload-artifact@v4
         with:
           name: reelzy-app
