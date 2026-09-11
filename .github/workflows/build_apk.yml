@@ -20,13 +20,21 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Build APK
+      - name: Auto-Fix Gradle Properties & Build APK
         run: |
           PROJECT_DIR=$(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1 | xargs dirname)
-          echo "Found project in: $PROJECT_DIR"
+          echo "Found Flutter project in: $PROJECT_DIR"
           cd "$PROJECT_DIR"
+          
+          # Force SDK 34 in gradle.properties and build files
+          echo "android.suppressUnsupportedCompileSdk=34" >> android/gradle.properties
+          
+          # Replace compileSdkVersion with 34 across gradle files
+          find android -type f \( -name "build.gradle" -o -name "build.gradle.kts" \) -exec sed -i 's/compileSdkVersion.*/compileSdkVersion 34/g' {} +
+          find android -type f \( -name "build.gradle" -o -name "build.gradle.kts" \) -exec sed -i 's/compileSdk = .*/compileSdk = 34/g' {} +
+
           flutter pub get
-          flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
+          flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
