@@ -20,21 +20,13 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Build APK (Bypass Version Checks)
+      - name: Build APK
         run: |
           PROJECT_DIR=$(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1 | xargs dirname)
           echo "Found project in: $PROJECT_DIR"
           cd "$PROJECT_DIR"
           flutter pub get
           flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: reelzy-app
-          path: '**/build/app/outputs/flutter-apk/*.apk'
-          flutter pub get
-          flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
