@@ -19,7 +19,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '3.29.0'
+          flutter-version: '3.47.3'
 
       - name: Force SDK 34 & Build APK
         run: |
@@ -34,6 +34,11 @@ jobs:
           flutter pub get
           flutter build apk --release --no-tree-shake-icons
 
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: reelzy-app
+          path: '**/build/app/outputs/flutter-apk/*.apk'
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
