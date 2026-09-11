@@ -19,24 +19,19 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          flutter-version: '3.24.0'
 
-      - name: Upgrade Gradle, Kotlin & Build APK
+      - name: Force SDK 34 & Build APK
         run: |
           PROJECT_DIR=$(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1 | xargs dirname)
-          echo "Found Flutter project in: $PROJECT_DIR"
-          cd "$PROJECT_DIR/android"
+          echo "Found project in: $PROJECT_DIR"
+          cd "$PROJECT_DIR"
 
-          # Upgrade Gradle Wrapper to 8.0
-          sed -i 's/gradle-.*-all.zip/gradle-8.0-all.zip/g' gradle/wrapper/gradle-wrapper.properties
-          sed -i 's/gradle-.*-bin.zip/gradle-8.0-bin.zip/g' gradle/wrapper/gradle-wrapper.properties
+          # Add flags to skip Kotlin compile constraints
+          echo "android.suppressUnsupportedCompileSdk=34" >> android/gradle.properties
+          echo "android.useAndroidX=true" >> android/gradle.properties
+          echo "android.enableJetifier=true" >> android/gradle.properties
 
-          # Enable compileSdk 34 support
-          echo "android.suppressUnsupportedCompileSdk=34" >> gradle.properties
-          
-          # Force update Kotlin version
-          sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = "1.8.22"/g' build.gradle || true
-          
-          cd ..
           flutter pub get
           flutter build apk --release --no-tree-shake-icons
 
