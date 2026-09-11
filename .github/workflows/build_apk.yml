@@ -26,7 +26,7 @@ jobs:
           echo "Found Flutter project in: $PROJECT_DIR"
           cd "$PROJECT_DIR"
           
-          # Upgrade compileSdk to 34
+          # Fix compileSdk to 34
           find android -name "build.gradle*" -exec sed -i 's/compileSdkVersion.*/compileSdkVersion 34/g' {} +
           find android -name "build.gradle*" -exec sed -i 's/compileSdk = .*/compileSdk = 34/g' {} +
 
@@ -38,10 +38,6 @@ jobs:
           flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: reelzy-app
-          path: '**/build/app/outputs/flutter-apk/*.apk'
         uses: actions/upload-artifact@v4
         with:
           name: reelzy-app
