@@ -19,31 +19,19 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          flutter-version: '3.47.3'
 
-      - name: Force SDK 34 & Build APK
+      - name: Build APK
         run: |
           PROJECT_DIR=$(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1 | xargs dirname)
           echo "Found project in: $PROJECT_DIR"
           cd "$PROJECT_DIR"
 
+          # Fix AGP 9+ DSL Conflict
+          echo "android.newDsl=false" >> android/gradle.properties
           echo "android.suppressUnsupportedCompileSdk=34" >> android/gradle.properties
-          echo "android.useAndroidX=true" >> android/gradle.properties
-          echo "android.enableJetifier=true" >> android/gradle.properties
 
           flutter pub get
           flutter build apk --release --no-tree-shake-icons
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: reelzy-app
-          path: '**/build/app/outputs/flutter-apk/*.apk'
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: reelzy-app
-          path: '**/build/app/outputs/flutter-apk/*.apk'
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
