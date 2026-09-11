@@ -20,12 +20,16 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Find Project Directory & Build APK
+      - name: Fix Compile SDK & Build APK
         run: |
-          # Find directory containing pubspec.yaml
           PROJECT_DIR=$(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1 | xargs dirname)
           echo "Found Flutter project in: $PROJECT_DIR"
           cd "$PROJECT_DIR"
+          
+          # Fix compileSdkVersion in build.gradle
+          find android -name "build.gradle*" -exec sed -i 's/compileSdkVersion.*/compileSdkVersion 34/g' {} +
+          find android -name "build.gradle*" -exec sed -i 's/compileSdk = .*/compileSdk = 34/g' {} +
+
           flutter pub get
           flutter build apk --release --no-tree-shake-icons
 
