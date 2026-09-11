@@ -21,13 +21,14 @@ jobs:
           channel: 'stable'
 
       - name: Get Dependencies
-        run: flutter pub get || true
+        run: flutter pub get
 
-      - name: Build APK
-        run: flutter build apk --release --no-tree-shake-icons
+      - name: Build APK (Debug/Release)
+        run: |
+          flutter build apk --debug --no-tree-shake-icons || flutter build apk --release --no-tree-shake-icons --no-build-cache
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: reelzy-app
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/*.apk
