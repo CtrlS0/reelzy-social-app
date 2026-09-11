@@ -20,16 +20,20 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Build APK
+      - name: Fix Gradle Version & Build APK
         run: |
           PROJECT_DIR=$(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1 | xargs dirname)
           echo "Found project in: $PROJECT_DIR"
-          cd "$PROJECT_DIR"
+          cd "$PROJECT_DIR/android"
 
-          # Fix AGP 9+ DSL Conflict
-          echo "android.newDsl=false" >> android/gradle.properties
-          echo "android.suppressUnsupportedCompileSdk=34" >> android/gradle.properties
+          # 1. Directly replace Gradle distribution URL to Gradle 8.4
+          sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.4-bin.zip|g' gradle/wrapper/gradle-wrapper.properties
 
+          # 2. Add flags to support AGP and Android SDK 34
+          echo "android.suppressUnsupportedCompileSdk=34" >> gradle.properties
+          echo "android.newDsl=false" >> gradle.properties
+
+          cd ..
           flutter pub get
           flutter build apk --release --no-tree-shake-icons
 
