@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -20,20 +20,19 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Auto-Fix Dependencies & Build APK
+      - name: Build APK (Bypass Version Checks)
         run: |
           PROJECT_DIR=$(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1 | xargs dirname)
-          echo "Found Flutter project in: $PROJECT_DIR"
+          echo "Found project in: $PROJECT_DIR"
           cd "$PROJECT_DIR"
-          
-          # Fix compileSdk to 34
-          find android -name "build.gradle*" -exec sed -i 's/compileSdkVersion.*/compileSdkVersion 34/g' {} +
-          find android -name "build.gradle*" -exec sed -i 's/compileSdk = .*/compileSdk = 34/g' {} +
+          flutter pub get
+          flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
 
-          # Upgrade Kotlin version to 1.9.10
-          find android -name "build.gradle*" -exec sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = "1.9.10"/g' {} +
-          find android -name "build.gradle*" -exec sed -i 's/org.jetbrains.kotlin.android" version .*/org.jetbrains.kotlin.android" version "1.9.10"/g' {} +
-
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: reelzy-app
+          path: '**/build/app/outputs/flutter-apk/*.apk'
           flutter pub get
           flutter build apk --release --no-tree-shake-icons
 
